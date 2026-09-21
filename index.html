@@ -3,91 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Cricket Simulator</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
+    <title>Pro Cricket Arcade Simulator</title>
+    <style>
+        :root {
+            --field-green: #2ecc71;
+            --pitch-dirt: #e3c498;
+            --navy-dark: #1a252f;
+            --accent-gold: #f1c40f;
+            --card-bg: #2c3e50;
+        }
+        
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #111;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 430px;
+            height: 96vh;
+            background-color: var(--navy-dark);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        #scoreboard {
+            background: #111a24;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            text-align: center;
+            border-bottom: 3px solid var(--accent-gold);
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .score-display {
+            color: var(--accent-gold);
+            font-size: 1.1rem;
+        }
+
+        #env-status {
+            font-size: 0.75rem;
+            text-align: center;
+            background: #2c3e50;
+            padding: 5px;
+            color: #bdc3c7;
+            letter-spacing: 0.5px;
+        }
+
+        #game-screen {
+            flex: 1;
+            background-color: var(--field-green);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            min-height: 280px;
+        }
+
+        #stadium-crowd {
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            opacity: 0.8;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        #pitch {
+            width: 60px;
+            height: 60%;
+            background-color: var(--pitch-dirt);
+            position: relative;
+            border-radius: 2px;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.15);
+        }
+
+        #stumps-bowler { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 0.9rem;}
+        #stumps-batsman { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.9rem;}
+        #batsman-avatar { 
+            position: absolute; 
+            bottom: 6px; 
+            left: 10px; 
+            font-size: 1.4rem; 
+            transition: transform 0.15s ease-out; 
+        }
+
+        #ball {
+            width: 12px;
+            height: 12px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+
+        #timing-meter-container {
+            width: 85%;
+            height: 14px;
+            background: #555;
+            border-radius: 7px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        #perfect-zone {
+            width: 16%;
+            height: 100%;
+            background: #2ecc71;
+            position: absolute;
+            left: 72%;
+        }
+
+        #timing-meter {
+            width: 4px;
+            height: 100%;
+            background: #fff;
+            position: absolute;
+            left: 0%;
+            box-shadow: 0 0 5px #fff;
+        }
+
+        #feedback-text { 
+            font-size: 1.4rem; 
+            font-weight: 900; 
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+            min-height: 30px;
+        }
+
+        #controls-zone { 
+            background: #111a24; 
+            padding: 12px;
+            border-top: 1px solid #2c3e50;
+        }
+
+        .player-labels { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 0.8rem; 
+            margin-bottom: 8px; 
+            color: #bdc3c7;
+        }
+
+        .player-labels input { 
+            background: #1a252f; 
+            border: 1px solid #4f5d73; 
+            color: #fff; 
+            width: 90px; 
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 0.8rem;
+        }
+
+        .delivery-buttons { 
+            display: flex; 
+            gap: 6px; 
+            margin: 5px 0 12px 0; 
+        }
+
+        .delivery-buttons button { 
+            flex: 1; 
+            padding: 8px; 
+            background: #2c3e50; 
+            color: white; 
+            border: 1px solid #34495e; 
+            border-radius: 6px; 
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .delivery-buttons button.active {
+            background: var(--accent-gold);
+            color: #111;
+            border-color: var(--accent-gold);
+        }
+
+        .action-buttons { display: flex; gap: 10px; }
+        .primary-btn { flex: 2; padding: 12px; background: #e67e22; border: none; color: white; font-weight: bold; font-size: 1.05rem; border-radius: 6px; cursor: pointer; }
+        .primary-btn:disabled { background: #7f8c8d; cursor: not-allowed; }
+        .secondary-btn { flex: 1; padding: 12px; background: #2980b9; border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer; }
+
+        .modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 15, 25, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            width: 82%;
+            text-align: center;
+            border: 2px solid var(--accent-gold);
+        }
+
+        .modal-content button { 
+            padding: 10px 22px; 
+            background: var(--accent-gold); 
+            border: none; 
+            font-weight: bold; 
+            border-radius: 6px; 
+            color: #111; 
+            cursor: pointer; 
+            font-size: 1rem;
+            margin-top: 15px;
+        }
+
+        #wagon-wheel-canvas {
+            background: #27ae60;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            margin: 15px auto;
+            display: block;
+        }
+    </style>
 </head>
 <body>
-    <div id="app-container">
-        <!-- Header Info -->
-        <header id="scoreboard">
-            <div class="team-info"><span id="batting-team">IND</span> vs <span id="bowling-team">AUS</span></div>
-            <div class="score-display"><span id="runs">0</span> / <span id="wickets">0</span></div>
-            <div class="overs-display">Overs: <span id="overs">0.0</span> / <span id="total-overs">2</span></div>
-            <div class="target-display" id="target-box" style="display:none;">Target: <span id="target">0</span></div>
-        </header>
 
-        <!-- Dynamic Pitch Conditions / Weather Indicator -->
-        <div id="env-status">Weather: <span id="weather-val">Sunny</span> | Pitch: <span id="pitch-val">Fresh</span></div>
+<div id="app-container">
+    <header id="scoreboard">
+        <div>IND vs AUS</div>
+        <div class="score-display"><span id="runs">0</span> / <span id="wickets">0</span></div>
+        <div>Overs: <span id="overs">0.0</span> / 2</div>
+    </header>
 
-        <!-- 1. Batting / Ball Tracking Screen -->
-        <main id="game-screen">
-            <div id="stadium-crowd" class="crowd-layer">🏟️ 🧍‍♂️🧍‍♀️🧍‍♂️🧍‍♀️ 🏟️</div>
-            <div id="pitch">
-                <div id="stumps-bowler">🏏</div>
-                <div id="ball"></div>
-                <div id="pitch-cracks"></div>
-                <div id="stumps-batsman">🏏</div>
-                <div id="batsman-avatar">🚶‍♂️</div>
-            </div>
-            <div id="timing-meter-container">
-                <div id="timing-meter"></div>
-                <div id="perfect-zone"></div>
-            </div>
-            <div id="feedback-text">READY</div>
-        </main>
+    <div id="env-status">Weather: <span id="weather-val">Sunny</span> | Pitch: <span id="pitch-val">Fresh</span></div>
 
-        <!-- 2. Action Controls Zone (Just below screen) -->
-        <section id="controls-zone">
-            <!-- Delivery & Bowler Data -->
-            <div class="player-labels">
-                <div>Bowler: <input type="text" id="bowler-name" value="B. Kumar"></div>
-                <div>Batsman: <input type="text" id="batsman-name" value="V. Kohli"></div>
-            </div>
+    <main id="game-screen">
+        <div id="stadium-crowd">🏟️ 🧍‍♂️🧍‍♀️🧍‍♂️ 🏟️</div>
+        <div id="pitch">
+            <div id="stumps-bowler">🏏</div>
+            <div id="ball"></div>
+            <div id="stumps-batsman">🏏</div>
+            <div id="batsman-avatar">🚶‍♂️</div>
+        </div>
+        <div id="timing-meter-container">
+            <div id="timing-meter"></div>
+            <div id="perfect-zone"></div>
+        </div>
+        <div id="feedback-text">READY</div>
+    </main>
 
-            <div class="control-group">
-                <label>Next Delivery Style:</label>
-                <div class="delivery-buttons">
-                    <button onclick="setDelivery('Fast')">🚀 Fast Ball</button>
-                    <button onclick="setDelivery('OffSpin')">🌀 Off-Spin</button>
-                    <button onclick="setDelivery('LegSpin')">🌪️ Leg-Spin</button>
-                </div>
-            </div>
-
-            <div class="action-buttons">
-                <button id="bat-btn" class="primary-btn" onclick="triggerBat()">🏏 SWING BAT</button>
-                <button id="next-ball-btn" class="secondary-btn" onclick="startDelivery()" style="display:none;">Next Ball</button>
-            </div>
-        </section>
-
-        <!-- Game Screens System Overlay -->
-        <div id="screen-overlay" class="modal">
-            <div class="modal-content">
-                <h2 id="modal-title">Welcome to Career Mode</h2>
-                <div id="modal-body">
-                    <p>Select your team and setup your tournament parameters.</p>
-                </div>
-                <button id="modal-action-btn" onclick="closeOverlay()">Start Match</button>
+    <section id="controls-zone">
+        <div class="player-labels">
+            <div>Bowler: <input type="text" id="bowler-name" value="B. Kumar"></div>
+            <div>Batsman: <input type="text" id="batsman-name" value="V. Kohli"></div>
+        </div>
+        
+        <div class="control-group">
+            <div class="delivery-buttons">
+                <button id="btn-Fast" class="active" onclick="setDelivery('Fast')">🚀 Fast Ball</button>
+                <button id="btn-OffSpin" onclick="setDelivery('OffSpin')">🌀 Off-Spin</button>
+                <button id="btn-LegSpin" onclick="setDelivery('LegSpin')">🌪️ Leg-Spin</button>
             </div>
         </div>
-    </div>
 
-    <script src="game.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed: ', err));
-            });
-        }
-    </script>
-    <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Offline system active!'))
-                .catch(err => console.log('Offline setup failed: ', err));
-        });
-    }
-    </script>
-</body>
-</html>
+        <div class="action-buttons">
+            <button id="bat-btn" class="primary-btn" onclick="triggerBat()" disabled>🏏 SWING BAT</button>
+            <button id="next-ball-btn" class="secondary-btn" onclick="startDelivery()">Next Ball</button>
+        </div>
+    </section>
+
+    <div id="screen-overlay" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">🏏 Welcome to Career Mode</h2>
+            <div id="modal-body">
+                <p>Select your team and setup your tournament parameters.</p>
+            </div>
+            <button id="modal-action-btn" onclick="closeOverlay()">Start Match</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let gameEngine = {
+    runs: 0, wickets: 0, balls: 0, totalOvers: 2,
+    currentStyle: 'Fast', isBallActive: false, ballProgress: 0, 
+    animationRef: null, timingPerfect: 76, shotDirections: []
+};
+
+function setDelivery(style) {
+    if (gameEngine.isBallActive) return;
+    gameEngine.currentStyle = style;
+    document.getElementById('feedback-text').innerText = style + ' Ready';
+    ['Fast', 'OffSpin', 'LegSpin'].forEach(s => {
+        document.getElementById('btn-' + s).classList.remove('active');
+    });
+    document.getElementById('btn-' + style).classList.add('active');
+}
+
+function closeOverlay() {
+    document.getElementById('screen-overlay').style.display = 'none';
+}
+
+function startDelivery() {
+    if (gameEngine.isBallActive) return;document.getElementById('bat-btn').disabled = false;gameEngine.isBallActive = true;gameEngine.ballProgress = 0;document.getElementById('ball').style.display = 'block';animateDelivery();}function animateDelivery() {if (!gameEngine.isBallActive) return;gameEngine.ballProgress += gameEngine.currentStyle === 'Fast' ? 2.5 : 1.6;let ballEl = document.getElementById('ball');ballEl.style.top = (15 + (gameEngine.ballProgress * 0.65)) + '%';document.getElementById('timing-meter').style.left = gameEngine.ballProgress + '%';if (gameEngine.ballProgress >= 100) {handleMiss();} else {gameEngine.animationRef =
+requestAnimationFrame(animateDelivery);}}function triggerBat() {if (!gameEngine.isBallActive) return;cancelAnimationFrame(gameEngine.animationRef);gameEngine.isBallActive = false;document.getElementById('bat-btn').disabled = true;let distance = Math.abs(gameEngine.ballProgress - gameEngine.timingPerfect);const avatar = document.getElementById('batsman-avatar');avatar.style.transform = 'scaleX(-1) rotate(-35deg)';setTimeout(() => { avatar.style.transform = 'none'; }, 200);if (distance < 6) {processScore(6, '💥 MAGNIFICENT SIX!!');} else if (distance < 12) {processScore(4, '⚡ CRACKING FOUR!');} else if (distance < 22) {processScore(1, '🏃 1 Run');} else {processWicket('☝️ OUT! Clean Bowled!');}
+
+    endBallSequence();}function handleMiss() {gameEngine.isBallActive = false;document.getElementById('bat-btn').disabled = true;processWicket('❌ Bowled!');endBallSequence();}function endBallSequence() {gameEngine.balls++;updateScoreboard();document.getElementById('ball').style.display = 'none';checkMatchOver();}function processScore(amount, message) {gameEngine.runs += amount;document.getElementById('feedback-text').innerText = message;}function processWicket(message) {gameEngine.wickets++;document.getElementById('feedback-text').innerText = message;}
+
+    function updateScoreboard() {document.getElementById('runs').innerText = gameEngine.runs;document.getElementById('wickets').innerText = gameEngine.wickets;document.getElementById('overs').innerText = Math.floor(gameEngine.balls / 6) + '.' + (gameEngine.balls % 6);}function checkMatchOver() {if (gameEngine.wickets >= 10 || gameEngine.balls >= 12) {document.getElementById('modal-title').innerText = '🏆 Match Finished';document.getElementById('modal-body').innerHTML = 'Final Score: ' + gameEngine.runs + ' / ' + gameEngine.wickets + '';document.getElementById('modal-action-btn').innerText = 'Play Again';document.getElementById('modal-action-btn').onclick = () => { window.location.reload(); };document.getElementById('screen-overlay').style.display = 'flex';}}
