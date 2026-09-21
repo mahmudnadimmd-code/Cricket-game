@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pro Cricket Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Header Info -->
+        <header id="scoreboard">
+            <div class="team-info"><span id="batting-team">IND</span> vs <span id="bowling-team">AUS</span></div>
+            <div class="score-display"><span id="runs">0</span> / <span id="wickets">0</span></div>
+            <div class="overs-display">Overs: <span id="overs">0.0</span> / <span id="total-overs">2</span></div>
+            <div class="target-display" id="target-box" style="display:none;">Target: <span id="target">0</span></div>
+        </header>
+
+        <!-- Dynamic Pitch Conditions / Weather Indicator -->
+        <div id="env-status">Weather: <span id="weather-val">Sunny</span> | Pitch: <span id="pitch-val">Fresh</span></div>
+
+        <!-- 1. Batting / Ball Tracking Screen -->
+        <main id="game-screen">
+            <div id="stadium-crowd" class="crowd-layer">🏟️ 🧍‍♂️🧍‍♀️🧍‍♂️🧍‍♀️ 🏟️</div>
+            <div id="pitch">
+                <div id="stumps-bowler">🏏</div>
+                <div id="ball"></div>
+                <div id="pitch-cracks"></div>
+                <div id="stumps-batsman">🏏</div>
+                <div id="batsman-avatar">🚶‍♂️</div>
+            </div>
+            <div id="timing-meter-container">
+                <div id="timing-meter"></div>
+                <div id="perfect-zone"></div>
+            </div>
+            <div id="feedback-text">READY</div>
+        </main>
+
+        <!-- 2. Action Controls Zone (Just below screen) -->
+        <section id="controls-zone">
+            <!-- Delivery & Bowler Data -->
+            <div class="player-labels">
+                <div>Bowler: <input type="text" id="bowler-name" value="B. Kumar"></div>
+                <div>Batsman: <input type="text" id="batsman-name" value="V. Kohli"></div>
+            </div>
+
+            <div class="control-group">
+                <label>Next Delivery Style:</label>
+                <div class="delivery-buttons">
+                    <button onclick="setDelivery('Fast')">🚀 Fast Ball</button>
+                    <button onclick="setDelivery('OffSpin')">🌀 Off-Spin</button>
+                    <button onclick="setDelivery('LegSpin')">🌪️ Leg-Spin</button>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="bat-btn" class="primary-btn" onclick="triggerBat()">🏏 SWING BAT</button>
+                <button id="next-ball-btn" class="secondary-btn" onclick="startDelivery()" style="display:none;">Next Ball</button>
+            </div>
+        </section>
+
+        <!-- Game Screens System Overlay -->
+        <div id="screen-overlay" class="modal">
+            <div class="modal-content">
+                <h2 id="modal-title">Welcome to Career Mode</h2>
+                <div id="modal-body">
+                    <p>Select your team and setup your tournament parameters.</p>
+                </div>
+                <button id="modal-action-btn" onclick="closeOverlay()">Start Match</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed: ', err));
+            });
+        }
+    </script>
+</body>
+</html>
